@@ -1,0 +1,106 @@
+// Definición de pines
+#define DIGIT1 2
+#define DIGIT2 3
+#define SEGMENT_A 4
+#define SEGMENT_B 5
+#define SEGMENT_C 6
+#define SEGMENT_D 7
+#define SEGMENT_E 8
+#define SEGMENT_F 9
+#define SEGMENT_G 10
+#define BUTTON 11
+#define salida(pin) pinMode(pin, OUTPUT)
+#define entrada(pin) pinMode(pin, INPUT_PULLUP)
+#define encendido(pin) digitalWrite(pin, HIGH)
+#define apagado(pin) digitalWrite(pin, LOW)
+
+// Variables globales
+int digit1 = 0;
+int digit2 = 3;
+bool showDigit1 = true;
+bool buttonPressed = false;
+
+void setup() {
+// Configuración de pines
+salida(DIGIT1);
+salida(DIGIT2);
+salida(SEGMENT_A);
+salida(SEGMENT_B);
+salida(SEGMENT_C);
+salida(SEGMENT_D);
+salida(SEGMENT_E);
+salida(SEGMENT_F);
+salida(SEGMENT_G);
+entrada(BUTTON);
+}
+
+void loop() {
+// Leer estado del pulsador
+buttonPressed = digitalRead(BUTTON) == LOW;
+
+// Cambiar entre los dígitos cada vez que se presiona el pulsador
+if (buttonPressed) {
+showDigit1 = !showDigit1;
+delay(100);
+}
+
+// Mostrar el número de carnet en el display de 7 segmentos
+if (showDigit1) {
+// Mostrar el primer dígito
+encendido(DIGIT1);
+apagado(DIGIT2);
+  
+  
+  switch (digit1) {
+  case 0:
+    encendido(SEGMENT_A);
+    encendido(SEGMENT_B);
+    encendido(SEGMENT_C);
+    encendido(SEGMENT_D);
+    encendido(SEGMENT_E);
+    encendido(SEGMENT_F);
+    apagado(SEGMENT_G);
+    break;
+  case 1:
+    apagado(SEGMENT_A);
+    encendido(SEGMENT_B);
+    encendido(SEGMENT_C);
+    apagado(SEGMENT_D);
+    apagado(SEGMENT_E);
+    apagado(SEGMENT_F);
+    apagado(SEGMENT_G);
+    break;
+  // Añadir los casos para el resto de los dígitos
+  // ...
+}
+  
+  } else {
+// Mostrar el segundo dígito
+apagado(DIGIT1);
+encendido(DIGIT2);
+  
+  switch (digit2) {
+  case 0:
+    encendido(SEGMENT_A);
+    encendido(SEGMENT_B);
+    encendido(SEGMENT_C);
+    encendido(SEGMENT_D);
+    encendido(SEGMENT_E);
+    encendido(SEGMENT_F);
+    apagado(SEGMENT_G);
+    break;
+  case 1:
+    apagado(SEGMENT_A);
+    encendido(SEGMENT_B);
+    encendido(SEGMENT_C);
+    apagado(SEGMENT_D);
+    apagado(SEGMENT_E);
+    apagado(SEGMENT_F);
+    apagado(SEGMENT_G);
+    break;
+  // Añadir los casos para el resto de los dígitos
+  // ...
+}
+}
+}
+
