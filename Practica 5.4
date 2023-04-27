@@ -1,0 +1,55 @@
+#include <Keypad.h>
+
+const int pinBuzzer = 12; // Pin del buzzer
+const int pinSensor = 11; // Pin del sensor de radar
+const char* password = "2236"; // Contraseña
+char inputPassword[5]; // Contraseña ingresada por el usuario
+int i = 0; // Índice para la contraseña ingresada
+#define ent(pin) pinMode(pin, OUTPUT)
+#define sal(pin) pinMode(pin, INPUT)
+#define ON(pin) digitalWrite(pin, HIGH)
+#define OFF(pin) digitalWrite(pin, LOW) 
+
+// Definir la matriz de teclas del teclado matricial
+const byte ROWS = 4;
+const byte COLS = 4;
+char keys[ROWS][COLS] = {
+  {'1','2','3','A'},
+  {'4','5','6','B'},
+  {'7','8','9','C'},
+  {'*','0','#','D'}
+};
+byte rowPins[ROWS] = {6, 7, 8, 9}; // Pines de las filas
+byte colPins[COLS] = {5, 4, 3, 2}; // Pines de las columnas
+Keypad keypad = Keypad(makeKeymap(keys), rowPins, colPins, ROWS, COLS);
+
+void setup() {
+  sal(pinBuzzer); // Configurar el pin del buzzer como salida
+  ent(pinSensor); // Configurar el pin del sensor como entrada
+  Serial.begin(9600); // Inicializar la comunicación serial
+}
+
+void loop() {
+  // Verificar si el sensor de radar detectó movimiento
+  if (digitalRead(pinSensor) == HIGH){
+// Activar la alarma
+ON(pinBuzzer);
+delay(500); // Esperar medio segundo
+OFF(pinBuzzer);
+delay(500); // Esperar medio segundo
+}
+else {
+// Desactivar la alarma si la contraseña es correcta
+char key = keypad.getKey();
+if (key != NO_KEY) {
+inputPassword[i] = key;
+i++;
+if (i == 4) {
+i = 0;
+if (strcmp(inputPassword, password) == 0) {
+digitalWrite(pinBuzzer, LOW);
+}
+}
+}
+}
+}
