@@ -1,0 +1,83 @@
+#include <Adafruit_NeoPixel.h> //Se crean librerias 
+#include <Keypad.h>
+#include <Servo.h>
+
+#define NEOPIXEL_PIN 11
+#defi ne SERVO_PIN 10  //Se crean variables donde iran conectados los pines 
+#define ROWS 4
+#define COLS 4
+
+char keys[ROWS][COLS] = { // Orden de como ira el teclado 
+  {'1', '2', '3', 'A'},
+  {'4', '5', '6', 'B'},
+  {'7', '8', '9', 'C'},
+  {'*', '0', '#', 'D'}
+};
+
+byte rowPins[ROWS] = {2, 3, 4, 5};
+byte colPins[COLS] = {6, 7, 8, 9};
+
+Keypad keypad = Keypad(makeKeymap(keys), rowPins, colPins, ROWS, COLS);
+
+Adafruit_NeoPixel strip = Adafruit_NeoPixel(NEOPIXEL_PIN, NEO_GRB + NEO_KHZ800);
+
+Servo servo;
+
+int servoPos = 90;
+
+void setup() {
+  strip.begin();
+  strip.show();
+  
+  servo.attach(SERVO_PIN);
+  servo.write(servoPos);
+  
+  Serial.begin(9600);
+}
+
+void loop() {
+  char key = keypad.getKey();
+  
+  if (key == '1') {
+     // Secuencia 1: luces en orden
+    for (int i = 0; i < NEOPIXEL_PIN; i++) {
+      strip.setPixelColor(i, 255, 0, 0);
+      strip.show();
+      delay(50);
+    }
+    strip.clear();
+    strip.show();
+
+  } else if (key == '2') {
+
+    // Secuencia 2: luces parpadeando
+    for (int i = 0; i < 3; i++) {
+      strip.fill(255, 0, 0, NEOPIXEL_PIN / 2);
+      strip.show();
+      delay(500);
+      strip.clear();
+      strip.show();
+      delay(500);
+    }
+
+  } else if (key == '3') {
+
+    // Secuencia 3: luces aleatorias
+    for (int i = 0; i < NEOPIXEL_PIN; i++) {
+      strip.setPixelColor(random(NEOPIXEL_PIN), 255, 0, 0);
+      strip.show();
+      delay(50);
+    }
+    strip.clear();
+    strip.show();
+
+  } else if (key == 'A') {
+
+    // Cambio de posición del servomotor
+    servoPos += 10;
+    servo.write(servoPos);
+    Serial.print("Posición del servomotor: ");
+    Serial.println(servoPos);
+
+  }
+  }
