@@ -1,0 +1,55 @@
+//Eric Alexander Cotzajay Batz
+//Carnet: 2022309
+//Fecha: 04/05/2023
+
+#include <RTClib.h>
+#include <LiquidCrystal.h> // librería para controlar la pantalla LCD
+#include <OneWire.h> // librería para el sensor de temperatura DS18B20
+#include <DallasTemperature.h> // librería para el sensor de temperatura DS18B20
+#include <LiquidCrystal_I2C.h>
+LiquidCrystal lcd(12, 11, 5, 4, 3, 2); // definir los pines de la pantalla LCD
+OneWire oneWire(10); // definir el pin del sensor de temperatura
+DallasTemperature sensors(&oneWire); // definir el sensor de temperatura
+
+#define buzzer 8 // definir el pin del buzzer
+#define bomba 7 // definir el pin de la bomba
+#define sensor 10
+#define RTC_SCA A4
+#define RTC_SCL A5
+#define Modulo_SCA A4
+#define Modulo_SCL A5
+
+#define salida(pin) pinMode(pin, OUTPUT)
+#define alto(pin) pinMode(pin, HIGH)
+#define bajo(pin) pinMode(pin, LOW)
+
+void setup() {
+
+  Serial.begin(9600);
+  lcd.begin(16, 2); // inicializar la pantalla LCD
+  sensors.begin(); // inicializar el sensor de temperatura
+  salida(buzzer); // configurar el pin del buzzer como salida
+  salida(bomba); // configurar el pin de la bomba como salida
+}
+
+void loop() {
+  sensors.requestTemperatures(); // leer la temperatura del agua
+  float temperatura = sensors.getTempCByIndex(0); // obtener la temperatura del agua en grados Celsius
+  lcd.setCursor(0, 0); // ubicar el cursor en la primera línea de la pantalla LCD
+  lcd.print("Temperatura: "); // mostrar la etiqueta "Temperatura"
+  lcd.print(temperatura); // mostrar la temperatura del agua
+  lcd.print("C"); // mostrar la unidad de temperatura
+  
+  if (hour() == 12 && minute() == 0) { // si es la hora programada (12:00 PM)
+    lcd.clear(); // borrar la pantalla LCD
+    lcd.setCursor(0, 0); // ubicar el cursor en la primera línea de la pantalla LCD
+    lcd.print("ADVERTENCIA!"); // mostrar la advertencia en la pantalla LCD
+    alto(buzzer); // emitir el sonido de alarma
+    delay(500); // esperar medio segundo
+    bajo(buzzer); // detener el sonido de alarma
+    alto(bomba); // encender la bomba de agua
+    delay(20000); // mantener la bomba de agua encendida durante 20 segundos
+    bajo(bomba); // apagar la bomba de agua
+  }
+  delay(1000); // esperar un segundo antes de volver a leer la temperatura y verificar si es la hora programada
+}
