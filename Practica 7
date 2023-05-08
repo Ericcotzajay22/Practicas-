@@ -1,0 +1,116 @@
+#include <Keypad.h>
+#include <Servo.h> 
+#include <Wire.h>
+#include <LiquidCrystal_I2C.h>
+#include <RTClib.h>
+
+LiquidCrystal_I2C lcd(0x27,16,2);
+const byte filas = 4;
+const byte columnas = 4;
+
+char keys[filas][columnas]={
+  {'1', '2', '3', 'A'},
+  {'4', '5', '6', 'B'},
+  {'7', '8', '9', 'C'},
+  {'*', '0', '#', 'D'}
+};
+
+char clave[5] = {'1','2','3','4','5'};
+char claveEnt[5];
+
+byte pinesFilas[filas] = {10,9,8,7};
+byte pinesColumnas[columnas] = {6,5,4,3};
+
+Keypad teclado = Keypad(makeKeymap(keys),pinesFilas,pinesColumnas,filas,columnas);
+
+#define srvo 2
+int cont = 0;
+int iden = 0;
+int con2 = 5;
+#define RTC_SDA  A4
+#define RTC_SCL  A5
+#define modulo_SDA  A4
+#define moudlo_SCL  A5
+#define salida(pin) pinMode(pin, OUTPUT)
+#define encen(pin) digitalWrite(pin, HIGH)
+#define apag(pin) digitalWrite(pin, LOW)
+char tecla;
+Servo servo;
+int servoPos = 90;
+RTC_DS1307 rtc;
+
+void setup() {
+  servo.attach(srvo);
+Serial.begin(9600);
+lcd.init();
+lcd.backlight();
+lcd.clear();
+salida(srvo);
+encen(srvo);
+
+Wire.begin();
+rtc.begin();
+}
+
+
+void loop() {
+ DateTime now = rtc.now();
+ Serial.print(now.hour(), DEC);
+ Serial.print(':');
+ Serial.print(now.minute(), DEC);
+ Serial.print(':');
+ Serial.print(now.second(), DEC);
+  lcd.setCursor(0,0);
+  lcd.print("INGRESE LA CLAVE");
+  tecla = teclado.getKey();
+  
+  if(tecla){
+    claveEnt[cont] = tecla;
+    cont++;
+
+    lcd.setCursor(con2,1);
+    lcd.print("*");
+    con2++;
+
+    if(cont == 5);
+     for(int i = 0; i<=4;i++){
+
+      if(claveEnt[i] != clave [i]){
+      iden = 1;
+      }
+      }
+
+if(iden ==1){
+  lcd.clear();
+  lcd.setCursor(5,0);
+  lcd.print("CLAVE");
+  lcd.setCursor(3,1);
+  lcd.print("INCORRECTA");
+  delay(1000);
+  cont = 0;
+  iden = 0;
+  con2 =5;
+  lcd.clear();
+}
+
+else{
+
+  servoPos += 10;
+  lcd.clear();
+  lcd.setCursor(5,0);
+  lcd.print("CLAVE");
+  lcd.setCursor(4,1);
+  lcd.print("CORRECTA");
+  apag(srvo);
+  delay(2000);
+  encen(srvo);
+  
+ con2 = 5;
+ cont = 0;
+ lcd.clear();
+}
+}
+
+}
+  
+
