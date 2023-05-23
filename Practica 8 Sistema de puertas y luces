@@ -1,4 +1,5 @@
-#include <Adafruit_LiquidCrystal.h> //Se incluyen libreria para el LCD e I2C.
+#include <Wire.h>
+#include <LiquidCrystal_I2C.h>
 #include <Keypad.h> //Se incluye libreria para poder utilizar el teclado matricial.
 #include <Servo.h> // Libreria para poder mover los 4 servomotores que se utilizaran.
 
@@ -29,14 +30,17 @@ char contrase[4]; //Cuantos caracteres maximos sera nuestra contraseña.
 int indice=0; //Se usara si queres que tenga codigos diferentes cada puerta.
 Keypad teclado = Keypad(makeKeymap(keys), filpins, colpins, FIL, COL); //Se usa para inicializar el teclado matricial
 char presionada; //Al momento de presionar alguna tecla lo detecte y mande la informacion. 
-Adafruit_LiquidCrystal lcd(0); // Se utiliza para mandar las señales y mostrar los mensajes en el lcd
+#define LCD_ADDRESS 0x27
+#define LCD_COLUMNS 16
+#define LCD_ROWS 2
+LiquidCrystal_I2C lcd(0x27,16,2);
 
 #define Salida(pin) pinMode(pin, OUTPUT); //Se crean nuestras propias variables para los estados de los pines. 
 #define Alto(pin) digitalWrite(pin, HIGH);
 #define Bajo(pin) digitalWrite(pin, LOW);
 
 void setup(){
- lcd.begin(16, 2); //Se inicia el LCD
+ 
   myservo.attach(2); //Pines donde iran cada unos de los servomotores
  myservo2.attach(2);
   myservo3.attach(3);
@@ -46,11 +50,16 @@ void setup(){
   Salida(led2);
  Salida(led3);
   Salida(led4);
-lcd.print("Ingrese Codigo"); //Mostrara texto antes de colocar una contraseña
+
+   lcd.begin(16, 2);
+  Wire.begin();
+  lcd.backlight();
+  lcd.init();
+    lcd.println("Ingrese Codigo  "); //Mostrara texto antes de colocar una contraseña
+
 }
 
 void loop(){
-  
   presionada= teclado.getKey(); //Se coloca el nombre que se le puso al teclado matricial y a que funcion tiene que mandar señal
   if(presionada){ //Si se presionda alguna tecla
     contrase[indice]=presionada; //funcion para ver a donde tendra que mandar si la contraseña es correcta o incorrecta
@@ -59,11 +68,10 @@ void loop(){
   }
   if(indice==3){ // Si la contraseña que se ingreso es correcta se moveran los servomotores para abrir las puertas
     if(strcmp(contra,contrase)==0){
-      lcd.clear(); //Se borrara el mensaje anterior y pasara al siguiente mensaje que tenga un lcd.print
+      lcd.setCursor(0,0);//Se borrara el mensaje anterior y pasara al siguiente mensaje que tenga un lcd.print
       lcd.println("Acceso Permitido"); //Se mostrara mensaje de la contraseña correcta en el lcd
-      lcd.clear();
-      lcd.println("Bienvenido");
-      lcd.clear();
+      lcd.setCursor(0,1);
+      lcd.println("Bienvenido      ");
   myservo.write(0); //Se moveran los servomotores al angulo correspondiente que se le ha colocado
   myservo2.write(0);
   myservo3.write(0);
@@ -72,15 +80,16 @@ void loop(){
   Alto(led2);
   Alto(led3);
   Alto(led4);
-  delay(1500);//Tiempo de espera sera 1500 milisegundos
+  delay(2000);//Tiempo de espera sera 1500 milisegundos
     }
     else{ //Si la contraseña es incorrecta pasara por la funcion del else
-      lcd.clear(); //Se borrara el mensaje de ingrese codigo y pasara al siguiente lcd.print 
-      lcd.println("Acceso Denegado");//Mensaje que mostrara el lcd al ser la contraseña incorrecto
+      lcd.setCursor(0,0);//Se borrara el mensaje de ingrese codigo y pasara al siguiente lcd.print 
+      lcd.println("Acceso Denegado ");//Mensaje que mostrara el lcd al ser la contraseña incorrecto
+      lcd.setCursor(0,1);
+      lcd.println("Alarma Activada ");//Mensaje de decoracion 
+      delay(1000);
       lcd.clear();
-      lcd.println("Alarma Activada");//Mensaje de decoracion 
-      lcd.clear();
-      lcd.println("Ingrese Codigo"); //Se volvera a colocar el primer lcd.print al momento de no haber return
+      lcd.println("Ingrese Codigo  "); //Se volvera a colocar el primer lcd.print al momento de no haber return
   myservo.write(90); //Los servomotores no se moveran de su posicion incial y permaneceran quietos
   myservo2.write(90);
   myservo3.write(90);
@@ -89,7 +98,7 @@ void loop(){
   Bajo(led2);
   Bajo(led3);
   Bajo(led4);
-delay(1000); //Su tiempo de espera sera de 1500 milisegundos
+delay(2000); //Su tiempo de espera sera de 1500 milisegundos
 }
     indice=0; //volvera al primer if que se puso anteriormente siendo como un return
   }
