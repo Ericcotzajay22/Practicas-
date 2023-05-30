@@ -1,25 +1,24 @@
-#include <Wire.h>
+#include <Wire.h> //Se colocan las librerias para comunicarse con el lcd y su modulo
 #include <LiquidCrystal_I2C.h>
-#define rele 4
+#define rele 4 //Se define los pines que se utilizaran para las conexiones
 #define Echo 9
 #define Trig 8
 #define btn1 6
 #define btn2 5
 #define buzzer 7
-#define SDA A4
+#define SDA A4 //Se define los pines para el modulo del lcd
 #define SCL A5
-#define sal(pin) pinMode(pin, OUTPUT)
+#define sal(pin) pinMode(pin, OUTPUT) //Se crean nuevas variables para definir los estados de los pines  
 #define ent(pin) pinMode(pin, INPUT)
 #define alt(pin) digitalWrite(pin, HIGH)
 #define baj(pin) digitalWrite(pin, LOW)
-#define pull(pin) pinMode(pin, INPUT_PULLUP);
-float time;
-const float velocidad = 0.043;
-float distancia;
-#define pantallalcd 0x27
-#define filas 2
-#define columnas 16
-LiquidCrystal_I2C lcd(pantallalcd, columnas, filas);
+float time; //Nos permite guardar datos numericos
+const float velocidad = 0.043; //Se coloca el tiempo del sonido para el ultrasonico
+float distancia; //Nos va a guardar los datos numericos de la distancia
+#define pantallalcd 0x27 //Se coloca las medidas del lcd
+#define filas 2 //Se define las filas del lcd
+#define columnas 16 //Se define las columnas del lcd
+LiquidCrystal_I2C lcd(pantallalcd, columnas, filas); //hace contacto con el modulo del lcd
 
  
 void setup() {
