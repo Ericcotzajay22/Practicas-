@@ -1,0 +1,66 @@
+#include <Wire.h>
+#include <LiquidCrystal_I2C.h>
+#define rele 4
+#define Echo 9
+#define Trig 8
+#define btn1 6
+#define btn2 5
+#define buzzer 7
+#define SDA A4
+#define SCL A5
+#define sal(pin) pinMode(pin, OUTPUT)
+#define ent(pin) pinMode(pin, INPUT)
+#define alt(pin) digitalWrite(pin, HIGH)
+#define baj(pin) digitalWrite(pin, LOW)
+#define pull(pin) pinMode(pin, INPUT_PULLUP);
+float time;
+const float velocidad = 0.043;
+float distancia;
+#define pantallalcd 0x27
+#define filas 2
+#define columnas 16
+LiquidCrystal_I2C lcd(pantallalcd, columnas, filas);
+
+ 
+void setup() {
+ sal(Trig);
+ ent(Echo);
+ sal(buzzer);
+ ent(btn1);
+ ent(btn2);
+ sal(rele);
+ Serial.begin(9600);
+ lcd.init();
+ lcd.backlight();
+attachInterrupt(digitalPinToInterrupt(2),cambio,RISING);
+attachInterrupt(digitalPinToInterrupt(3),cambio2,RISING);
+}
+
+void loop() {
+alt(Trig);
+delay(1);
+baj(Trig);
+time = pulseIn(Echo, HIGH);
+distancia = (time)*velocidad/2;
+Serial.print(distancia);
+Serial.print("cm");
+lcd.clear();
+lcd.setCursor(0,0);
+lcd.print("Distancia  ");
+lcd.setCursor(0,1);
+lcd.print(distancia);
+lcd.setCursor(8,1);
+lcd.print("%");
+delay(700);
+}
+
+ 
+
+void cambio(){
+lcd.clear();
+lcd.setCursor(0,0);
+lcd.println("INTERRUPCION");
+lcd.setCursor(0,1);
+lcd.println("Pausado por 10s");
+delay(100)
+}
