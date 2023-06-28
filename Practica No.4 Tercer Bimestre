@@ -1,0 +1,120 @@
+#include <Adafruit_NeoPixel.h> //Se incluyen librerias 
+#include <SoftwareSerial.h>
+#include <Servo.h>
+//#include "LedControl.h" //Se utiliza para utillizar la matriz led
+
+ 
+
+Servo servomotor; //Se crea nombre para el servomotor
+SoftwareSerial miBT(5, 6); //Se establece pines del modulo bluetooth
+
+ 
+
+char Dato = 0; //Resive los datos de los botones del modulo 
+#define LED_1 4 //Se establecen pines para cada led 
+#define LED_2 3
+#define LED_3 8
+#define LED_4 7
+#define PIN_LED 2
+#define NUM_LEDS 7 //numero de leds que tine el neo pixel
+#define OUT(pin) pinMode(pin, OUTPUT) //Se crean sus propias nombres a las variables 
+#define ON(pin) digitalWrite(pin, HIGH);
+#define OFF(pin) digitalWrite(pin, LOW);
+//LedControl MATLED = LedControl(11,13,10,1); //Se establece contacto con la matriz led
+int val = 0; //el valor del servomotor
+int estado = 0; //estado de los leds 
+Adafruit_NeoPixel strip = Adafruit_NeoPixel(NUM_LEDS, PIN_LED, NEO_GRB + NEO_KHZ800); // se establece contacto con el neo pixel
+
+ 
+
+void setup() {
+  miBT.begin(9600); //Se inicializa contacto con el modulo bluetooth en el serial monitor
+  Serial.begin(9600); // Se inicializa el serial monitor
+  OUT(LED_1); //Se establece que los leds son salidas 
+  OUT(LED_2);
+  OUT(LED_3);
+  OUT(LED_4);
+  servomotor.attach(9);//pine del servomotor
+  OUT(PIN_LED);
+  strip.begin(); //Se inicialaliza el neopixel 
+  strip.show();
+}
+
+ 
+
+void loop() {
+leds(); //Funciones que se utilizaran
+servo();
+neopix();
+
+}
+
+ 
+
+void leds(){
+   if (miBT.available() > 0){ //Establece que se conecte al modulo bluetooth
+    Dato = miBT.read(); //Escribe en el monitor Serial
+Serial.println(Dato); 
+   if(Dato == '1'){ //Cuando el boton en la app se presione se colocara como uno
+   estado = !estado; //Se vuelve a presionar el boton se apaga los leds
+   digitalWrite(LED_1, estado); //Se imprime el estado del boton 
+   }
+///////////////////////
+      if(Dato == '3'){//Cuando el boton en la app se presione se colocara como tres
+  estado = !estado; //Se vuelve a presionar el boton se apaga los leds
+   digitalWrite(LED_2, estado); //Se imprime el estado del boton
+   }
+//////////////////////
+   if(Dato == '5'){ //Cuando el boton en la app se presione se colocara como cinco
+   estado = !estado; //Se vuelve a presionar el boton se apaga los leds
+   digitalWrite(LED_3, estado);  //Se imprime el estado del boton
+   }
+/////////////////////
+if(Dato == '7'){ //Cuando el boton en la app se presione se colocara como siete
+   estado = !estado; //Se vuelve a presionar el boton se apaga los leds
+   digitalWrite(LED_4, estado); //Se imprime el estado del boton
+   }
+  }
+}
+
+ 
+
+void servo(){
+   while(miBT.available() > 0){ 
+    val = miBT.read(); //muestra el valor del servomotor cuando se mueve 
+    Serial.println(val); //imprime en el serial monitor
+    servomotor.write(val);
+    delay(10); //tiempo del servomotor
+  }
+}
+
+ 
+
+ 
+
+void neopix(){
+  if(Dato == '9'){
+    estado = !estado;
+    digitalWrite(PIN_LED, estado);
+    for (int i = 0; i < NUM_LEDS; i++) {
+    strip.setPixelColor(i, 255, 0, 0); // Establece el color a rojo (255, 0, 0)
+    strip.show(); // Muestra el color en los LEDs
+    delay(100); // Espera 100 milisegundos
+    strip.setPixelColor(i, 0, 0, 0); // Apaga el LED actual
+  }
+  }
+
+ 
+
+  if(Dato == '!9'){
+  // Enciende los LEDs uno por uno en secuencia descendente
+  for (int i = NUM_LEDS - 1; i >= 0; i--) {
+    strip.setPixelColor(i, 0, 0, 255); // Establece el color a azul (0, 0, 255)
+    strip.show(); // Muestra el color en los LEDs
+    delay(100); // Espera 100 milisegundos
+    strip.setPixelColor(i, 0, 0, 0); // Apaga el LED actual
+  }
+}
+}
+
+tiene menú contextual
