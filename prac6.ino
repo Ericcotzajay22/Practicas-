@@ -18,7 +18,7 @@
     D5          CTRL
   */
 
-#include <Wire.h>
+#include <Wire.h>  //Se agregan librerias
 #include <SparkFun_ADXL345.h>
 #include <Servo.h>
 
