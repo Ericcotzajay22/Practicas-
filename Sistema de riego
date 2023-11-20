@@ -1,0 +1,124 @@
+#include <Wire.h>
+#include <LiquidCrystal_I2C.h>
+
+const int trigPin = 2;          // Pin de señal del sensor ultrasónico
+const int echoPin = 3;          // Pin de eco del sensor ultrasónico
+const int relayPin1 = 4;        // Pin del relé canal 1
+const int buzzerPin = 6;        // Pin del buzzer
+const int buttonPin = 7;        // Pin del botón para activar la bomba manualmente
+const int manualSwitchPin = 8;  // Pin del interruptor para seleccionar el modo manual o automático
+const int levelLEDs[] = {9, 10, 11, 12, 13, A0, A1, A2, A6, A7}; // Pines de los LEDs
+const int lcdCols = 16;         // Columnas de la pantalla LCD
+const int lcdRows = 2;          // Filas de la pantalla LCD
+#define Relay A3
+
+LiquidCrystal_I2C lcd(0x27, lcdCols, lcdRows);  // Dirección I2C de la pantalla LCD
+
+int waterLevel = 0;
+int selectedLevel = 0;
+bool pumpActive = false;
+
+void setup() {
+  Serial.begin(9600);
+  lcd.begin(16,2);
+  lcd.backlight();
+  lcd.init();
+  pinMode(trigPin, OUTPUT);
+  pinMode(echoPin, INPUT);
+  pinMode(relayPin1, OUTPUT);
+  pinMode(buzzerPin, OUTPUT);
+  pinMode(buttonPin, INPUT);
+  pinMode(manualSwitchPin, INPUT);
+
+  for (int i = 0; i < sizeof(levelLEDs) / sizeof(levelLEDs[0]); i++) {
+    pinMode(levelLEDs[i], OUTPUT);
+  }
+
+  // Inicialmente, apaga la bomba y todos los LEDs
+  deactivatePump();
+  updateLEDs();
+}
+
+void loop() {
+  waterLevel = getWaterLevel(); // Obtener el nivel de agua actual
+  updateDisplay();             // Actualizar la pantalla LCD
+  updateLEDs();                // Actualizar los LEDs
+
+  // Modo Automático
+  if (waterLevel < 25 && digitalRead(manualSwitchPin) == LOW) {
+    activatePump();
+  } else if (waterLevel >= 100) {
+    deactivatePump();
+  }
+
+  // Modo Manual
+  if (digitalRead(manualSwitchPin) == HIGH) {
+    selectedLevel = getSelectedLevel();
+
+    if (digitalRead(buttonPin) == HIGH && pumpActive == false) {
+      if (waterLevel < selectedLevel) {
+        activatePump();
+      } else if (waterLevel >= 100) {
+        deactivatePump();
+      }
+    } else if (digitalRead(buttonPin) == LOW) {
+      deactivatePump();
+    }
+  }
+}
+
+int getWaterLevel() {
+  digitalWrite(trigPin, LOW);
+  delayMicroseconds(2);
+  digitalWrite(trigPin, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trigPin, LOW);
+
+  return pulseIn(echoPin, HIGH) / 58.2;  // Convertir la duración a distancia en centímetros
+}
+
+int getSelectedLevel() {
+  if (digitalRead(levelLEDs[0]) == HIGH) {
+    return 100;
+  } else if (digitalRead(levelLEDs[1]) == HIGH) {
+    return 75;
+  } else if (digitalRead(levelLEDs[2]) == HIGH) {
+    return 50;
+  } else if (digitalRead(levelLEDs[3]) == HIGH) {
+    return 25;
+  } else {
+    return 0;
+  }
+}
+
+void activatePump() {
+  digitalWrite(relayPin1, HIGH);
+  tone(6,523,100);
+  tone(6,450,100);
+  pumpActive = true;
+}
+
+void deactivatePump() {
+  digitalWrite(relayPin1, LOW);
+  digitalWrite(buzzerPin, LOW);
+  pumpActive = false;
+}
+
+void updateLEDs() {
+  int activeLEDs = map(waterLevel, 0, 100, 0, sizeof(levelLEDs) / sizeof(levelLEDs[0]));
+  for (int i = 0; i < sizeof(levelLEDs) / sizeof(levelLEDs[0]); i++) {
+    digitalWrite(levelLEDs[i], i < activeLEDs ? HIGH : LOW);
+  }
+}
+
+void updateDisplay() {
+  lcd.setCursor(0, 0);
+  lcd.print("Nivel: ");
+  lcd.print(waterLevel);
+  lcd.print("%    ");
+
+  lcd.setCursor(0, 1);
+  lcd.print("Modo: ");
+  lcd.print(pumpActive ? "Bomba Activada" : "Bomba Desactivada");
+  lcd.print("   ");
+}
